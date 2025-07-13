@@ -1,9 +1,9 @@
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/DevSloPo/Main/refs/heads/main/main.lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "黄某脚本中心",
+    Title = "凡脚本",
     Icon = "moon",
-    Author = "作者:黄某",
+    Author = "作者:凡尘",
     Folder = "CloudHub",
     Size = UDim2.fromOffset(400, 300),
     Transparent = true,
@@ -180,4 +180,10 @@ end
 end
 end)    
     end
+})
+
+local Tab = Window:Tab({
+    Title = "通用",
+    Icon = "warehouse",
+    Locked = false,
 })
