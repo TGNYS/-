@@ -39,32 +39,6 @@ WindUI:Popup({
     }
 })
 
-repeat wait() until Confirmed
-
-local Window = WindUI:CreateWindow({
-    Title = "凡尘",
-    Icon = "rbxassetid://129260712070622",
-    IconThemed = true,
-    Author = "凡脚本",
-    Folder = "CloudHub",
-    Size = UDim2.fromOffset(580, 460),
-    Transparent = true,
-    Theme = "Dark",
-    User = {
-        Enabled = true,
-        Callback = function() print("clicked") end,
-        Anonymous = true
-    },
-    SideBarWidth = 200,
-    ScrollBarEnabled = true,
-    KeySystem = {
-        Key = { "凡尘", "ke" },
-        Note = "Example Key System. \n\nThe 秘钥 是 '凡尘' 或者 'ke",
-        URL = "link-to-linkvertise-or-discord-or-idk",
-        SaveKey = true,
-    },
-})
-
 Window:CreateTopbarButton("MyCustomButton1", "bird", function() print("clicked 1!") end, 990)
 Window:CreateTopbarButton("MyCustomButton3", "battery-plus", function() Window:ToggleFullscreen() end, 989)
 
