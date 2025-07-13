@@ -252,102 +252,96 @@ Tabs.AttributeTab:Input({
     end
 })
 
-Tabs.MainTab = Window:Section({Title = "压力(正在更新)", Opened = true})
+Tabs.MainTab = Window:Section({Title = "压力", Opened = true})
 Tabs.NinjaTab = Tabs.MainTab:Tab({ Title = "透视", Icon = "zap" })
 
+Tabs.MainTab = Window:Section({Title = "刀刃球", Opened = true})
+Tabs.NinjaTab = Tabs.MainTab:Tab({ Title = "功能", Icon = "zap" })
+
 Tabs.NinjaTab:Toggle({
-    Title = "透视钥匙卡",
-    Desc = "透视",
+    Title = "自动击球(有点烂)",
+    Desc = "自动",
     Value = false,
     Callback = function(state)
         if state then
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- 配置
-local ESP_SETTINGS = {
-    Text = "🔑 钥匙卡",
-    TextColor = Color3.fromRGB(0, 255, 255),
-    TextSize = 20,
-    Font = Enum.Font.SourceSansBold,
-    Offset = Vector3.new(0, 2, 0),
-    MaxDistance = 50,  -- 显示距离（米）
-    RefreshRate = 1    -- 目标刷新频率（秒）
+-- 配置参数
+local Config = {
+    BaseHitCooldown = 1,
+    DynamicCooldownFactor = 0.3,
+    MinBallSpeed = 15,
+    MaxImpactTime = 0.5,
+    MinImpactTime = 0.05,
+    PlayerReach = 10,
+    RequiredDirection = 0.4,
+    BaseClickDuration = 0.05,
+    MinClickDuration = 0.02,
+    MaxBallSpeedForClickDuration = 100,
+    HighSpeedThreshold = 50,
+    DoubleHitDelayBase = 0.15,
+    MinDoubleHitDelay = 0.05,
+    MovingThreshold = 0.1,
+    ReactionCompensationBase = 0.03,
+    SpeedForReactionCompensation = 50
 }
 
--- 存储所有ESP实例
-local activeESP = {}
+-- 缓存常用服务
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
--- 创建/更新文字ESP
-local function updateESP(target)
-    -- 移除旧ESP（如果存在）
-    if activeESP[target] then
-        activeESP[target]:Destroy()
-    end
+-- 状态变量
+local lastHitTime = 0
+local player = Players.LocalPlayer
+local character, humanoid, rootPart
 
-    -- 创建新ESP
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "TextESP_"..target.Name
-    billboard.AlwaysOnTop = true
-    billboard.Active = false
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.ExtentsOffset = ESP_SETTINGS.Offset
-    billboard.LightInfluence = 0
-    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
-    billboard.Parent = target
+-- 预计算函数
+local math_min = math.min
+local math_max = math.max
+local math_clamp = math.clamp
+local tick = tick
+local task_delay = task.delay
 
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Text = ESP_SETTINGS.Text
-    textLabel.TextColor3 = ESP_SETTINGS.TextColor
-    textLabel.TextSize = ESP_SETTINGS.TextSize
-    textLabel.Font = ESP_SETTINGS.Font
-    textLabel.BackgroundTransparency = 1
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.Parent = billboard
-
-    -- 存储引用
-    activeESP[target] = billboard
-
-    -- 自动清理监听
-    target.AncestryChanged:Connect(function(_, parent)
-        if not parent and activeESP[target] then
-            activeESP[target]:Destroy()
-            activeESP[target] = nil
-        end
-    end)
+-- 动态点击持续时间计算
+local function getDynamicClickDuration(ballSpeed)
+    local speedFactor = math_clamp((ballSpeed - 30) / (Config.MaxBallSpeedForClickDuration - 30), 0, 1)
+    return Config.BaseClickDuration * (1 - speedFactor * 0.6) + Config.MinClickDuration
 end
 
--- 查找所有钥匙卡
-local function findKeycards()
-    local drawers = workspace.GameplayFolder.Rooms.Start.Interactables:GetChildren()
-    local found = {}
+-- 动态冷却时间计算
+local function getDynamicCooldown(distance, ballSpeed)
+    local distanceFactor = math_min(1, distance / 20)
+    local speedFactor = math_min(1, ballSpeed / Config.MaxBallSpeedForClickDuration)
+    return Config.BaseHitCooldown * (1 - Config.DynamicCooldownFactor * (distanceFactor * 0.7 + speedFactor * 0.3))
+end
+
+-- 获取最近的球 (优化版)
+local function GetNearestBall()
+    if not character then return nil end
     
-    for _, drawer in ipairs(drawers) do
-        if drawer.Name:find("Drawer") then
-            local spawnLoc = drawer:FindFirstChild("SpawnLocations")
-            if spawnLoc then
-                local keycard = spawnLoc:FindFirstChild("SpawnKeycard")
-                if keycard then
-                    table.insert(found, keycard)
+    local nearestBall, minDistance = nil, math.huge
+    local balls = workspace.Balls:GetChildren()
+    local rootPosition = rootPart.Position
+    
+    for i = 1, #balls do
+        local ball = balls[i]
+        if ball:GetAttribute("realBall") and ball:IsA("BasePart") then
+            local ballSpeed = ball.Velocity.Magnitude
+            if ballSpeed > Config.MinBallSpeed then
+                local distance = (ball.Position - rootPosition).Magnitude
+                if distance < minDistance then
+                    minDistance = distance
+                    nearestBall = ball
                 end
             end
         end
     end
-    return found
+    
+    return nearestBall, minDistance
 end
 
--- 主循环
-local function ESPLoop()
-    while true do
-        -- 清理超出距离的ESP
-        for target, esp in pairs(activeESP) do
-            if not target.Parent or 
-               (Players.LocalPlayer.Character and 
-               (target.Position - Players.LocalPlayer.Character:GetPivot().Position).Magnitude > ESP_SETTINGS.MaxDistance) then
-                esp:Destroy()
-                activeESP[target] = nil
-            end
-        end
-
-     
+-- 优化版方向判断
+local function isBallDangerous(ball, distance)
+    if not ball or not rootPart then return false end
+    
+ 
