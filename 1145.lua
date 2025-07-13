@@ -3105,10 +3105,13 @@ Tabs.STab:Button({
     end
 })
 
-Window:OnClose(function()
-    print("UI closed.")
-end)
-
     Tabs.MainTab = Window:Section({Title = "极速传奇", Opened = true})
     Tabs.SpeedTab = Tabs.MainTab:Tab({ Title = "刷", Icon = "zap" })
 end
+
+Tabs.NinjaTab:Toggle({
+    Title = "无限跳跃",
+    Desc = "开启/关闭无限跳跃能力",
+    Value = false, 
+    Callback = function(state)
+        if state then
