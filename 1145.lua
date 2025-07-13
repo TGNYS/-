@@ -3115,3 +3115,7 @@ Tabs.NinjaTab:Toggle({
     Value = false, 
     Callback = function(state)
         if state then
+
+Window:OnClose(function()
+    print("UI closed.")
+end)
