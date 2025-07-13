@@ -3109,10 +3109,7 @@ Window:OnClose(function()
     print("UI closed.")
 end)
 
-Tabs.MainTab = Window:Section({Title = "矿井", Opened = true})
-Tabs.ForestTab = Tabs.MainTab:Tab({ Title = "透视", Icon = "zap" })
+    Tabs.MainTab = Window:Section({Title = "极速传奇", Opened = true})
+    Tabs.SpeedTab = Tabs.MainTab:Tab({ Title = "刷", Icon = "zap" })
+end
 
-Tabs.ForestTab:Toggle({
-    Title = "透视矿物",
-    Desc = "显示附近的矿物",
-    Callback = function(state)
