@@ -42,10 +42,10 @@ WindUI:Popup({
 repeat wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "KE",
+    Title = "凡尘",
     Icon = "rbxassetid://129260712070622",
     IconThemed = true,
-    Author = "KE脚本",
+    Author = "凡脚本",
     Folder = "CloudHub",
     Size = UDim2.fromOffset(580, 460),
     Transparent = true,
@@ -69,7 +69,7 @@ Window:CreateTopbarButton("MyCustomButton1", "bird", function() print("clicked 1
 Window:CreateTopbarButton("MyCustomButton3", "battery-plus", function() Window:ToggleFullscreen() end, 989)
 
 Window:EditOpenButton({
-    Title = "KE脚本",
+    Title = "凡脚本",
     Icon = "monitor",
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
@@ -87,7 +87,7 @@ end
 Window:SelectTab(1)
 
 Tabs.SpeedTab:Button({
-    Title = "KE刷速度",
+    Title = "凡刷速度",
     Desc = "刷速度",
     Callback = function()
         local code = [[
@@ -102,7 +102,7 @@ Tabs.SpeedTab:Button({
 })
 
 Tabs.SpeedTab:Button({
-    Title = "KE刷",
+    Title = "凡刷",
     Desc = "刷砖石",
     Callback = function()
         local code = [[
