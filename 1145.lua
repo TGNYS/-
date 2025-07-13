@@ -20,18 +20,18 @@ end
 local Confirmed = false
 
 WindUI:Popup({
-    Title = "Welcome! Popup Example",
+    Title = "欢迎使用凡脚本",
     Icon = "rbxassetid://129260712070622",
     IconThemed = true,
     Content = "This is an Example UI for the " .. gradient("WindUI", Color3.fromHex("#00FF87"), Color3.fromHex("#60EFFF")) .. " Lib",
     Buttons = {
         {
-            Title = "Cancel",
+            Title = "退出",
             Callback = function() end,
             Variant = "Secondary",
         },
         {
-            Title = "Continue",
+            Title = "使用",
             Icon = "arrow-right",
             Callback = function() Confirmed = true end,
             Variant = "Primary",
@@ -329,7 +329,7 @@ Tabs.buyTab:Button({
     end
 })
 
-Tabs.MainTab = Window:Section({Title = "生存99天", Opened = true})
+Tabs.MainTab = Window:Section({Title = "生成99天", Opened = true})
 Tabs.ForestTab = Tabs.MainTab:Tab({ Title = "物品透视", Icon = "zap" })
 
 Tabs.ForestTab:Toggle({
@@ -3112,4 +3112,3 @@ end)
     Tabs.MainTab = Window:Section({Title = "极速传奇", Opened = true})
     Tabs.SpeedTab = Tabs.MainTab:Tab({ Title = "刷", Icon = "zap" })
 end
-
